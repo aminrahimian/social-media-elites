@@ -4,6 +4,7 @@
 # Last Update: 20190410
 # by Kazutoshi Sasahara
 # Used by Zhaohan Xing
+# Version 1.2
 
 import numpy as np
 import networkx as nx
@@ -50,7 +51,7 @@ class SocialMedia(object):
     This time, create structure: two society with equal number of users, only few edges between these
     two societies. There is one "center" user who is popular in each society, respectively
     '''
-    def __init__(self, num_agents,l,edges_number):
+    def __init__(self, num_agents, l, edges_number):
         '''
         To construct
         :param num_agents: The total number of users in the network
@@ -60,13 +61,18 @@ class SocialMedia(object):
         '''
         self.num_agents = num_agents
         # Two different society, and combine them into one network
-        G1 = nx.star_graph(num_agents//2)
-        G2 = nx.star_graph(num_agents//2)
+        G1 = nx.star_graph(num_agents//2 - 1)
+        G2 = nx.star_graph(num_agents//2 - 1)
         self.G = nx.disjoint_union(G1,G2)
+        self.G = nx.DiGraph(self.G)
+        for u, v in list(self.G.edges):
+            # Remove all the edges that are originated from other users to the centers
+            if v == 0 or v == num_agents:
+                self.G.remove_edge(u, v)
         # Create some edges between societies
         for i in range(edges_number):
-            c1 = np.random.choice(len(G1.nodes)-1)
-            c2 = len(G1.nodes) + np.random.choice(len(G2.nodes)-1)
+            c1 = np.random.choice(num_agents//2 - 1)
+            c2 = num_agents//2 + np.random.choice(num_agents//2 - 1)
             self.G.add_edge(c1, c2)
         self.message_dic = {}
         # Create a dataframe containing msg information

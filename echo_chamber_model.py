@@ -4,6 +4,7 @@
 # Last Update: 20190410
 # by Kazutoshi Sasahara
 # Used by Zhaohan Xing
+# Version 1.2
 
 import os
 import numpy as np
@@ -30,7 +31,7 @@ class EchoChamberDynamics(object):
         # Run the function to setup the agents in the network
         self.set_agents(num_agents, epsilon)
         # Create the network structure based on the class SocialMedia
-        self.social_media = SocialMedia(num_agents,l,edges_between_societies)
+        self.social_media = SocialMedia(num_agents, l, edges_between_societies)
         self.data_dir = data_dir
         self.opinion_data = []
         self.screen_diversity_data = []
@@ -43,7 +44,7 @@ class EchoChamberDynamics(object):
         screen_diversity = Analysis.screen_diversity([], bins=10)
         # Create users in the network, half of them are somewhat positive and others are negative
         self.agents = [Agent(i, epsilon, screen_diversity, "-") for i in range(num_agents//2)] + \
-                      [Agent(num_agents//2 + 1 + i, epsilon, screen_diversity, "+") for i in range(num_agents//2)]
+                      [Agent(num_agents//2 + i, epsilon, screen_diversity, "+") for i in range(num_agents//2)]
 
     def total_discordant_messages(self):
         '''
@@ -129,8 +130,11 @@ class EchoChamberDynamics(object):
             msg = self.agents[user_id].post_message(t, p)
             self.social_media.update_message_db(t, msg)
 
-            # finalize and export data <BUG PROBLEM:NOT CONSIDERING STABLE>
-            if t >= t_max - 1:
+            # finalize and export data
+            if self.is_stationary_state(self.social_media.G):
+                self.final_exports(t)
+                break
+            elif t >= t_max - 1:
                 self.final_exports(t)
                 break
 

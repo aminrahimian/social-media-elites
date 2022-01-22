@@ -4,6 +4,7 @@
 # Last Update: 20210118
 # by Kazutoshi Sasahara
 # Used by Zhaohan Xing
+# Version 1.2
 
 import numpy as np
 import social_media
