@@ -51,29 +51,48 @@ class SocialMedia(object):
     This time, create structure: two society with equal number of users, only few edges between these
     two societies. There is one "center" user who is popular in each society, respectively
     '''
-    def __init__(self, num_agents, l, edges_number):
+    def __init__(self, num_agents, l, network_model, *paras):
         '''
         To construct
         :param num_agents: The total number of users in the network
         :param l: The size of the screen
-        :param edges_number: The edges between two societies (One is with somewhat positive agents
-        the other is some what negative)
+        :param network_model: Specify the model used in the network
+        :param paras:
+            *paras: edges_number
+            If the model is Elites model
+                The edges between two societies (One is with somewhat positive agents
+                the other is some what negative)
+            *paras: (p, q)
+            If the model is Stochastic Block Model, provide the probability tuple
+                p: same community share an edge
+                q: diffrent community share an edge
         '''
         self.num_agents = num_agents
         # Two different society, and combine them into one network
-        G1 = nx.star_graph(num_agents//2 - 1)
-        G2 = nx.star_graph(num_agents//2 - 1)
-        self.G = nx.disjoint_union(G1,G2)
-        self.G = nx.DiGraph(self.G)
-        for u, v in list(self.G.edges):
-            # Remove all the edges that are originated from other users to the centers
-            if v == 0 or v == num_agents:
-                self.G.remove_edge(u, v)
-        # Create some edges between societies
-        for i in range(edges_number):
-            c1 = np.random.choice(num_agents//2 - 1)
-            c2 = num_agents//2 + np.random.choice(num_agents//2 - 1)
-            self.G.add_edge(c1, c2)
+        if network_model == "Elites":
+            G1 = nx.star_graph(num_agents//2 - 1)
+            G2 = nx.star_graph(num_agents//2 - 1)
+            self.G = nx.disjoint_union(G1,G2)
+            self.G = nx.DiGraph(self.G)
+            for u, v in list(self.G.edges):
+                # Remove all the edges that are originated from other users to the centers
+                if v == 0 or v == num_agents:
+                    self.G.remove_edge(u, v)
+            # Create some edges between societies
+            for i in range(paras[0]):
+                c1 = np.random.choice(num_agents//2 - 1)
+                c2 = num_agents//2 + np.random.choice(num_agents//2 - 1)
+                # Half probability each side to add edges. This probability may be changed based on the real condition
+                if np.random.random() < 0.5:
+                    self.G.add_edge(c1, c2)
+                else:
+                    self.G.add_edge(c2, c1)
+        elif network_model == "Stochastic Block":
+            # Probability is given. It is highly related to the structure
+            self.G = nx.generators.stochastic_block_model(
+                [num_agents//2, num_agents//2],
+                [[paras[0], paras[1]], [paras[1], paras[0]]], directed = True
+            )
         self.message_dic = {}
         # Create a dataframe containing msg information
         self.message_df = pd.DataFrame(columns=['msg_id', 'orig_msg_id', 'who_posted', 'who_originated', 'content'])

@@ -24,14 +24,14 @@ class EchoChamberDynamics(object):
         Attributes:
             num_agents, l, epsilon, social_media, data_dit, opinion_data, screen_diversity_data
     '''
-    def __init__(self, num_agents, epsilon, l, data_dir, edges_between_societies):
+    def __init__(self, num_agents, epsilon, l, data_dir, model, *paras):
         self.num_agents = num_agents
         self.l = l
         self.epsilon = epsilon
         # Run the function to setup the agents in the network
         self.set_agents(num_agents, epsilon)
         # Create the network structure based on the class SocialMedia
-        self.social_media = SocialMedia(num_agents, l, edges_between_societies)
+        self.social_media = SocialMedia(num_agents, l, model, *paras)
         self.data_dir = data_dir
         self.opinion_data = []
         self.screen_diversity_data = []
@@ -155,7 +155,7 @@ if __name__ == '__main__':
     data_root_dir = os.path.join('data_' + ''.join(now_str))
     s = pd.datetime.now()
     print(s)
-    d = EchoChamberDynamics(n_agents, epsilon, l, data_root_dir, 5)
+    d = EchoChamberDynamics(n_agents, epsilon, l, data_root_dir, "Stochastic Block", 0.6, 0.2)
     d.evolve(t_max, mu, p, q, following_methods)
     e = pd.datetime.now()
     print(e)
