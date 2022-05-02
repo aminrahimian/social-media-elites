@@ -155,7 +155,7 @@ if __name__ == '__main__':
     data_root_dir = os.path.join('data_' + ''.join(now_str))
     s = pd.datetime.now()
     print(s)
-    d = EchoChamberDynamics(n_agents, epsilon, l, data_root_dir, "Stochastic Block", 0.5, 0.05)
+    d = EchoChamberDynamics(n_agents, epsilon, l, data_root_dir, "Elites", 1, 0.5, 0.05)
     d.evolve(t_max, mu, p, q, following_methods)
     e = pd.datetime.now()
     print(e)

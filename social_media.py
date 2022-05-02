@@ -58,10 +58,17 @@ class SocialMedia(object):
         :param l: The size of the screen
         :param network_model: Specify the model used in the network
         :param paras:
-            *paras: edges_number
+            *paras: (k, x, y)
             If the model is Elites model
-                The edges between two societies (One is with somewhat positive agents
-                the other is some what negative)
+                k: The influential power of the elites. k = 1 if the elites are connected to all
+                the other agents, k = 0 if the elites do not guarantee to connect (similar to SBM)
+                x: The parameter that should be the same to p in SBM model, to control the irrelevant
+                factors. The number of edges within societies should be the same
+                (kn/2 + (n/2-1)(n/2-1)x(real) = n/2(n/2-1)p)
+                y: The parameter that should be the same to q in SBM model, to control the irrelevant
+                factors. The number of edges between societies should be the same
+                ((n/2-1)(n/2-1)*y(real) = n/2 * n/2 * q)
+                Notice: Do not connect the eilte to the other societies' agents here
             *paras: (p, q)
             If the model is Stochastic Block Model, provide the probability tuple
                 p: same community share an edge
@@ -78,15 +85,40 @@ class SocialMedia(object):
                 # Remove all the edges that are originated from other users to the centers
                 if v == 0 or v == num_agents:
                     self.G.remove_edge(u, v)
+                # Remove some edges if the influencial power is less than 1
+                if paras[0] < 1:
+                    for u, v in list(self.G.edges):
+                        if np.random.random() < 1 - paras[0]:
+                            self.G.remove_edge(u, v)
+                elif paras[0] <= 0 or paras[0] > 1:
+                    print("The influential power must be a number between 0 and 1 (0 not included)")
+                    print("Warning! Enter a valid value")
+            # Create some edges within societies, to make sure that the expected number of edges are is the same
+            # Since x is the same as p, but the real probability is:
+            x = (num_agents//2 * (num_agents//2 - 1) * paras[1] - paras[0] * (num_agents // 2)) / ((num_agents//2 - 1) * (num_agents//2 - 1))
+            for c1 in range(1,num_agents//2-1):
+                for c2 in range(num_agents//2 - 1):
+                    if c1 != c2:
+                        if np.random.random() < x:
+                            self.G.add_edge(c1, c2)
+            for c1 in range(num_agents//2 + 1, num_agents - 1):
+                for c2 in range(num_agents//2, num_agents - 1):
+                    if c1 != c2:
+                        if np.random.random() < x:
+                            self.G.add_edge(c1, c2)
+
             # Create some edges between societies
-            for i in range(paras[0]):
-                c1 = np.random.choice(num_agents//2 - 1)
-                c2 = num_agents//2 + np.random.choice(num_agents//2 - 1)
-                # Half probability each side to add edges. This probability may be changed based on the real condition
-                if np.random.random() < 0.5:
-                    self.G.add_edge(c1, c2)
-                else:
-                    self.G.add_edge(c2, c1)
+            # Since x is the same as p, but the real probability is:
+            y = (num_agents // 2) * (num_agents // 2) * paras[2]  / (
+                                    (num_agents // 2 - 1) * (num_agents // 2 - 1))
+            for c1 in range(1, num_agents // 2 - 1):
+                for c2 in range(num_agents // 2 + 1, num_agents - 1):
+                    if np.random.random() < y:
+                        self.G.add_edge(c1, c2)
+            for c1 in range(num_agents // 2 + 1, num_agents - 1):
+                for c2 in range(1, num_agents // 2 - 1):
+                    if np.random.random() < x:
+                        self.G.add_edge(c1, c2)
         elif network_model == "Stochastic Block":
             # Probability is given. It is highly related to the structure
             self.G = nx.generators.stochastic_block_model(
