@@ -85,6 +85,7 @@ class SocialMedia(object):
                 # Remove all the edges that are originated from other users to the centers
                 if v == 0 or v == num_agents:
                     self.G.remove_edge(u, v)
+            for u, v in list(self.G.edges):
                 # Remove some edges if the influencial power is less than 1
                 if paras[0] < 1:
                     for u, v in list(self.G.edges):
