@@ -123,8 +123,8 @@ class SocialMedia(object):
         elif network_model == "Stochastic Block":
             # Probability is given. It is highly related to the structure
             self.G = nx.generators.stochastic_block_model(
-                [num_agents//2, num_agents//2],
-                [[paras[0], paras[1]], [paras[1], paras[0]]], directed = True
+                [num_agents],
+                [[paras[0]]], directed = True
             )
         self.message_dic = {}
         # Create a dataframe containing msg information
